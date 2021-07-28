@@ -8,7 +8,6 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 from urllib.parse import quote, unquote
 
 import requests
-from stringcase import snakecase
 
 from socomote.settings import MP3_LIB
 

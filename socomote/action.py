@@ -46,4 +46,4 @@ class Query(Action):
 
 @dataclass
 class SelectGroup(Action):
-    ix: int
+    ix: str

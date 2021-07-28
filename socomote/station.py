@@ -35,16 +35,18 @@ class Stations:
 
     def refresh(self):
         def inner():
-            self._stations = []
+            new_stations = []
             for fav in MusicLibrary().get_sonos_favorites():
                 uri = fav.get_uri()
                 if is_station_uri(uri):
-                    self._stations.append(Station(fav.title, uri))
-            self._station_index = {station: i for i, station in enumerate(self._stations)}
+                    new_stations.append(Station(fav.title, uri))
+            new_index = {station: i for i, station in enumerate(new_stations)}
+            self._stations = new_stations
+            self._station_index = new_index
             logger.info(f"Stations list initialised, there are {len(self)}")
         while True:
             inner()
-            time.sleep(10)
+            time.sleep(60)
 
     def __iter__(self):
         return iter(self._stations)

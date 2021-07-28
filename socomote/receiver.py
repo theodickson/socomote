@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 class Receiver:
 
-    def __init__(self, controller: SoCo, handler: InputHandler):
+    def __init__(self, controller: SoCo):
         self._controller: SoCo = controller
-        self._handler = handler
+        self._handler = InputHandler()
         self._stations = Stations()  # todo - stations need refreshing
         self._tts_server = TTSServer()
         self._action_queue = Queue()
@@ -35,7 +35,10 @@ class Receiver:
 
     def main(self):
         for action in self._handler.main():
-            self._action_queue.put(action)
+            if self._action_queue.qsize() <= 3:
+                self._action_queue.put(action)
+            else:
+                logger.info(f"Could not add {action} to action queue, queue full. Discarding action.")
 
     def _process_actions(self):
         while True:
@@ -45,9 +48,9 @@ class Receiver:
                 if isinstance(action, PlayPause):
                     self.play_pause()
                 elif isinstance(action, VolUp):
-                    self._controller.volume += 1
+                    self._controller.volume += 3
                 elif isinstance(action, VolDown):
-                    self._controller.volume -= 1
+                    self._controller.volume -= 3
                 elif isinstance(action, Next):
                     self.prev_next(is_next=True)
                 elif isinstance(action, Previous):
@@ -64,8 +67,6 @@ class Receiver:
                     self.to_group(action.ix)
             except BaseException as e:
                 logging.error(f"Unhandled exception: {e}")
-
-        logging.error("Action processing thread died")
 
     def play_station(self, station: Station):
         logger.info(f"Playing station {station}")

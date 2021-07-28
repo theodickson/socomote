@@ -1,3 +1,4 @@
+import json
 import os
 from pathlib import Path
 from typing import Dict
@@ -5,36 +6,19 @@ from typing import Dict
 import soco
 from soco import SoCo
 
-from socomote.input_handler import KeyboardInputHandler
-
 ZONES: Dict[str, SoCo] = {}
 for zone in soco.discover():
     ZONES[zone.player_name] = zone
 
-GROUP_CONFIG = {
-    'Study': {
-        1: [],
-        2: ['Kitchen']
-    },
 
-    'Kitchen': {
-        1: [],
-        2: ['Living Room'],
-        3: ['Living Room', 'Study']
-    },
-
-    'Living Room': {
-        1: [],
-        2: ['Kitchen'],
-        3: ['Kitchen', 'Study']
-    }
-}
+SOCOMOTE_HOME = Path(
+    os.environ.get('SOCOMOTE_HOME', '~/socomote')
+).expanduser()
 
 
-HANDLERS = {
-    'KEYBOARD': KeyboardInputHandler()
-}
+with (SOCOMOTE_HOME / "config.json").open() as f:
+    CONFIG = json.load(f)
 
-MP3_LIB = Path(
-    os.environ.get('SOCOMOTE_MP3_LIB', '/Users/theo/development/socomote/mp3s')
-)
+GROUP_CONFIG = CONFIG['group_config']
+
+MP3_LIB = SOCOMOTE_HOME / "mp3s"
