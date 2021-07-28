@@ -3,6 +3,8 @@ TODO
 
 - Package it
 - Async usage?
+- Change all station terminology to channel?  
+- separate channel up/down from prev/next
 - Use timing instead of enter for numbers
   - could then use enter as something else
 - Better action handling:

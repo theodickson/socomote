@@ -40,7 +40,7 @@ class Stations:
                 uri = fav.get_uri()
                 if is_station_uri(uri):
                     new_stations.append(Station(fav.title, uri))
-            new_index = {station: i for i, station in enumerate(new_stations)}
+            new_index = {station: i + 1 for i, station in enumerate(new_stations)}
             self._stations = new_stations
             self._station_index = new_index
             logger.info(f"Stations list initialised, there are {len(self)}")
@@ -55,23 +55,24 @@ class Stations:
         return len(self._stations)
 
     def __getitem__(self, item):
-        return self._stations[item]
+        # we 1-index the stations to correspond to button presses
+        return self._stations[item - 1]
 
     def get_index(self, item):
         return self._station_index.get(item)
 
     def next_station(self, ix):
-        if 0 <= ix < len(self) - 1:
+        if 1 <= ix < len(self):
             return self[ix + 1]
-        elif ix == len(self) - 1:
-            return self[0]
+        elif ix == len(self):
+            return self[1]
         else:
             raise ValueError(f"Index {ix} is invalid, no next station can be found.")
 
     def prev_station(self, ix):
-        if ix == 0:
-            return self[len(self) - 1]
-        elif 0 < ix < len(self):
+        if ix == 1:
+            return self[len(self)]
+        elif 1 < ix <= len(self):
             return self[ix - 1]
         else:
             raise ValueError(f"Index {ix} is invalid, no previous station can be found.")

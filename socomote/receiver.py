@@ -158,16 +158,14 @@ class Receiver:
         if current is not None:
             self.play_station(current)
 
-    def to_group(self, i: int):
+    def to_group(self, i: str): # todo - weird using strings for indices even though it comes from json config
         self._take_control()
-        current_slaves = sorted([
-            s.player_name for s in self._controller.group if s != self._controller
-        ])
-        target_slaves = sorted(GROUP_CONFIG[self._controller.player_name][i])
+        current_slaves = {s.player_name for s in self._controller.group if s != self._controller}
+        target_slaves = set(GROUP_CONFIG[self._controller.player_name][i])
         if target_slaves != current_slaves:
             logger.info(f"Grouping with target slaves {target_slaves}. (Current slaves are: {current_slaves}")
-            released_slaves = set(current_slaves) - set(target_slaves)
-            new_slaves = set(target_slaves) - set(current_slaves)
+            released_slaves = current_slaves - target_slaves
+            new_slaves = target_slaves - current_slaves
             for slave in released_slaves:
                 ZONES[slave].unjoin()
             for slave in new_slaves:
