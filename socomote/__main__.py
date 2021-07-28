@@ -9,6 +9,11 @@ parser = ArgumentParser()
 parser.add_argument("--zone", "-z", help="Sonos zone to control (defaults to 'zone' in config.json).")
 parser.add_argument("--debug", "-d", action="store_true", help="Run in DEBUG mode.")
 
+def main(receiver: Receiver):
+    with receiver as r:
+        r.start()
+    return 0
+
 if __name__ == '__main__':
     args = parser.parse_args()
     logging_level = logging.DEBUG if args.debug else logging.INFO
@@ -26,5 +31,4 @@ if __name__ == '__main__':
     controller = ZONES[zone_name]
     receiver = Receiver(controller)
 
-    with receiver as r:
-        r.main()
+    sys.exit(main(receiver))

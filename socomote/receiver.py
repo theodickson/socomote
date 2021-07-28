@@ -33,8 +33,8 @@ class Receiver:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._tts_server.__exit__(exc_type, exc_val, exc_tb)
 
-    def main(self):
-        for action in self._handler.main():
+    def start(self):
+        for action in self._handler.actions():
             if self._action_queue.qsize() <= 3:
                 self._action_queue.put(action)
             else:
@@ -68,21 +68,8 @@ class Receiver:
             except BaseException as e:
                 logging.error(f"Unhandled exception: {e}")
 
-    def play_station(self, station: Station):
-        logger.info(f"Playing station {station}")
-        self.speak(station.title)
-        time.sleep(2)  # todo
-        start = time.time()
-        self._controller.play_uri(uri=station.uri, title=station.title)
-        end = time.time()
-        duration = end - start
-        logger.debug(f"Took {duration} to play URI")
-
-    def play_station_by_index(self, ix: int):
-        station = self._stations[ix]
-        self.play_station(station)
-
     def _is_playing(self):
+        # todo - get rid
         curr_info = self._controller.get_current_track_info()
         position = curr_info['position']
         logger.debug(f"Current position is {repr(position)}")
@@ -93,7 +80,42 @@ class Receiver:
             logger.debug(f"Currently playing.")
             return True
 
+    def _take_control(self):
+        if self._controller.group.coordinator != self._controller:
+            slaves = [s for s in self._controller.group if s != self._controller]
+            logger.info(
+                f"Controller {self._controller.player_name} is not the master, "
+                f"taking control of: {[s.player_name for s in slaves]}"
+            )
+            for s in slaves:
+                s.unjoin()
+            for s in slaves:
+                s.join(self._controller)
+
+    def _play_uri(self, uri="", meta="", title="", start=True, force_radio=False):
+        self._take_control()
+        self._controller.play_uri(uri=uri, meta=meta, title=title, start=start, force_radio=force_radio)
+
+    def _speak(self, text):
+        uri = self._tts_server.get_uri(text)
+        self._play_uri(uri=uri, title=text)
+
+    def play_station(self, station: Station):
+        logger.info(f"Playing station {station}")
+        self._speak(station.title)
+        time.sleep(2)  # todo
+        start = time.time()
+        self._play_uri(uri=station.uri, title=station.title)
+        end = time.time()
+        duration = end - start
+        logger.debug(f"Took {duration} to play URI")
+
+    def play_station_by_index(self, ix: int):
+        station = self._stations[ix]
+        self.play_station(station)
+
     def play_pause(self):
+        self._take_control()
         if not self._is_playing():
             logger.debug(f"Sending play command")
             self._controller.play()
@@ -118,6 +140,7 @@ class Receiver:
                 logger.error(f"No index for current station. It must not be a sonos favourite.")
         else:
             logger.info(f"Not currently playing a radio station, doing next/prev command.")
+            self._take_control()
             if is_next:
                 self._controller.next()
             else:
@@ -134,22 +157,6 @@ class Receiver:
         current = self.current_station()
         if current is not None:
             self.play_station(current)
-
-    def speak(self, text):
-        uri = self._tts_server.get_uri(text)
-        self._controller.play_uri(uri=uri, title=text)
-
-    def _take_control(self):
-        if self._controller.group.coordinator != self._controller:
-            slaves = [s for s in self._controller.group if s != self._controller]
-            logger.info(
-                f"Controller {self._controller.player_name} is not the master, "
-                f"taking control of: {[s.player_name for s in slaves]}"
-            )
-            for s in slaves:
-                s.unjoin()
-            for s in slaves:
-                s.join(self._controller)
 
     def to_group(self, i: int):
         self._take_control()

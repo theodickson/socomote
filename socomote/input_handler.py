@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 class InputHandler:
 
-    def main(self) -> Iterable[Action]:
+    def actions(self) -> Iterable[Action]:
         buffer = ''
         while True:
             char = getkey()
@@ -44,13 +44,13 @@ class InputHandler:
             if input is not None:
                 try:
                     logger.info(f"Handling input {repr(input)}.")
-                    yield self.handle(input)
+                    yield self.handle_input(input)
                 except:
                     pass
             else:
                 logger.info("No valid input. Continuing.")
 
-    def handle(self, inp: Any) -> Action:
+    def handle_input(self, inp: Any) -> Action:
         if inp == 'p':
             return PlayPause()
         elif inp == keys.UP:

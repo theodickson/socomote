@@ -1,10 +1,3 @@
-"""
-TODO:
-- Random non-fav station
-- Handle all errors, maybe some logging
-- Handle station out of index
--
-"""
 from dataclasses import dataclass
 
 
