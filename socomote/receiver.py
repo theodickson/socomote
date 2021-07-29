@@ -20,10 +20,10 @@ class Receiver:
     def __init__(self, controller: SoCo):
         self._controller: SoCo = controller
         self._handler = InputHandler()
-        self._stations = Stations()  # todo - stations need refreshing
+        self._stations = Stations()
         self._tts_server = TTSServer()
         self._action_queue = Queue()
-        self._action_thread = Thread(target=self._process_actions, daemon=True)
+        self._action_thread = Thread(target=self._process_actions)
 
     def __enter__(self):
         self._tts_server.__enter__()
@@ -34,11 +34,19 @@ class Receiver:
         self._tts_server.__exit__(exc_type, exc_val, exc_tb)
 
     def start(self):
+        self._speak("Socomote is now running")
+        time.sleep(3)
         for action in self._handler.actions():
-            if self._action_queue.qsize() <= 3:
+            if isinstance(action, Exit):
+                self._handler.exited = True
+                self._action_queue.put(action)
+                logger.info(f"Exiting.")
+                break
+            elif self._action_queue.qsize() <= 3:
                 self._action_queue.put(action)
             else:
                 logger.info(f"Could not add {action} to action queue, queue full. Discarding action.")
+        self._action_thread.join()
 
     def _process_actions(self):
         while True:
@@ -65,6 +73,11 @@ class Receiver:
                     self.query_station()
                 elif isinstance(action, SelectGroup):
                     self.to_group(action.ix)
+                elif isinstance(action, Exit):
+                    self._speak("Socomote is shutting down")
+                    time.sleep(3)
+                    logger.debug("Exiting action thread.")
+                    break
             except BaseException as e:
                 logging.error(f"Unhandled exception: {e}")
 
@@ -151,7 +164,7 @@ class Receiver:
         if is_station_uri(info['uri']):
             return Station(title=info['channel'], uri=info['uri'])
         else:
-            logger.info(f"Currently playing from channel {info['channel']}, uri {info['uri']} not a station.")
+            logger.info(f"Currently playing from station {info['channel']}, uri {info['uri']} not a station.")
 
     def query_station(self):
         current = self.current_station()

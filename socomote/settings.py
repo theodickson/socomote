@@ -22,3 +22,5 @@ with (SOCOMOTE_HOME / "config.json").open() as f:
 GROUP_CONFIG = CONFIG['group_config']
 
 MP3_LIB = SOCOMOTE_HOME / "mp3s"
+
+LOG_FILE = SOCOMOTE_HOME / "main.log"

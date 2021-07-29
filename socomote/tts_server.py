@@ -11,7 +11,7 @@ import requests
 
 from socomote.settings import MP3_LIB
 
-START_PORT = 9001
+START_PORT = 9000
 END_PORT = 9999
 
 logger = logging.getLogger('tts_server')
@@ -36,11 +36,11 @@ class TTSRequestHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(file.read())
         except socket.error as error:
-            print('Connection is closed by peer')
+            logger.error('Connection is closed by peer')
             pass
         except IOError as error:
             self.send_response(500)
-            print('I/O error: %s' % (str(error)))
+            logger.error('I/O error: %s' % (str(error)))
         return
 
     def _get_mp3_file(self, filename):

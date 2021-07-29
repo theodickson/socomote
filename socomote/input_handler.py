@@ -9,9 +9,14 @@ logger = logging.getLogger(__name__)
 
 class InputHandler:
 
+    def __init__(self):
+        self.exited = False
+
     def actions(self) -> Iterable[Action]:
         digit_buffer = ''
         while True:
+            if self.exited:
+                break
             char = getkey()
             logger.debug(f"Received {repr(char)}")
             input = None
@@ -58,7 +63,9 @@ class InputHandler:
         elif inp == 'q':
             return Query()
         elif inp[0].isdigit():
-            if inp[-1].isdigit():
+            if inp == '000m':
+                return Exit()
+            elif inp[-1].isdigit():
                 station_ix = int(inp)
                 return SelectStation(station_ix)
             elif inp[-1] == 'm':

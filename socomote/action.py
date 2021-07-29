@@ -40,3 +40,7 @@ class Query(Action):
 @dataclass
 class SelectGroup(Action):
     ix: str
+
+@dataclass
+class Exit(Action):
+    pass
