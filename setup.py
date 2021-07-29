@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='socomote',
-    version='0.0.1',
+    version='0.0.2',
     packages=['socomote'],
     install_requires=[
         "soco >= 0.23.2",
