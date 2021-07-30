@@ -29,7 +29,7 @@ class Install(install):
 
 setup(
     name='socomote',
-    version='0.0.2',
+    version='0.0.3',
     packages=['socomote'],
     install_requires=[
         "pyyaml",
