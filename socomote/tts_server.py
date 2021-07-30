@@ -9,7 +9,7 @@ from urllib.parse import quote, unquote
 
 import requests
 
-from socomote.settings import MP3_LIB
+from socomote.config import MP3_LIB
 
 START_PORT = 9000
 END_PORT = 9999
@@ -79,6 +79,7 @@ class TTSServer(HTTPServer):
             return s.connect_ex(('localhost', port)) == 0
 
     def _find_free_port(self):
+        # todo - not sure this works
         for port in range(START_PORT, END_PORT):
             if not self._is_port_in_use(port):
                 return port

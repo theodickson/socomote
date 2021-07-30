@@ -3,12 +3,11 @@ TODO
 
 - Packaging:
   - Create socomote home
-  - Create default config.json
+  - Create default config.yaml
   - create mp3 lib (probably in code not config)
   - unix only?
-- safe shutdown
-- Config tool
-- infinite retry loop e.g. if network not yet ready?
+- Configurable keymap
+- Infinite retry loop e.g. if network not yet ready?
 - Async usage?
 - Use timing instead of enter for numbers
   - could then use enter as something else
@@ -20,4 +19,5 @@ TODO
   - This *may* be to do with the POST requests being long running,
     which means *possibly* if they are cancelled somehow client-side
     this can be done.
+    
     

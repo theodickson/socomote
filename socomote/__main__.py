@@ -1,10 +1,10 @@
 import logging
-from logging.handlers import RotatingFileHandler
 import sys
 from argparse import ArgumentParser
+from logging.handlers import RotatingFileHandler
 
+from socomote.config import ZONES, CONFIG, LOG_FILE, MASTER_ZONE
 from socomote.receiver import Receiver
-from socomote.settings import ZONES, CONFIG, SOCOMOTE_HOME
 
 parser = ArgumentParser()
 parser.add_argument("--zone", "-z", help="Sonos zone to control (defaults to 'zone' in config.json).")
@@ -28,14 +28,14 @@ if __name__ == '__main__':
     if args.console_log:
         handler = logging.StreamHandler(sys.stdout)
     else:
-        filename = str(SOCOMOTE_HOME / "main.log")
+        filename = str(LOG_FILE)
         handler = RotatingFileHandler(filename=filename, maxBytes=10*1024*1024)
 
     logging.basicConfig(
         level=logging_level, format="%(asctime)s - [%(levelname)s] - %(name)s: %(message)s", handlers=[handler]
     )
     logger = logging.getLogger(__name__)
-    zone_name = args.zone if args.zone is not None else CONFIG["zone"]
+    zone_name = args.zone if args.zone is not None else MASTER_ZONE
     logger.info(f"Starting socomote receiver for zone '{zone_name}'...")
     controller = ZONES[zone_name]
     receiver = Receiver(controller)

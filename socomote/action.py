@@ -39,7 +39,11 @@ class Query(Action):
 
 @dataclass
 class SelectGroup(Action):
-    ix: str
+    ix: int
+
+@dataclass
+class SetMaster(Action):
+    ix: int
 
 @dataclass
 class Exit(Action):

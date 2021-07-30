@@ -6,10 +6,11 @@ from threading import Thread
 from typing import Optional
 
 from soco import SoCo
+from yaml import dump
 
 from socomote.action import *
+from socomote.config import ZONES, CONFIG, MASTER_ZONE, SOCOMOTE_MASTER_ZONE_FILE
 from socomote.input_handler import InputHandler
-from socomote.settings import GROUP_CONFIG, ZONES
 from socomote.station import Station, Stations, is_station_uri
 from socomote.tts_server import TTSServer
 
@@ -34,8 +35,7 @@ class Receiver:
         self._tts_server.__exit__(exc_type, exc_val, exc_tb)
 
     def start(self):
-        self._speak("Socomote is now running")
-        time.sleep(3)
+        self._hello()
         for action in self._handler.actions():
             if isinstance(action, Exit):
                 self._handler.exited = True
@@ -47,6 +47,7 @@ class Receiver:
             else:
                 logger.info(f"Could not add {action} to action queue, queue full. Discarding action.")
         self._action_thread.join()
+        self._goodbye()
 
     def _process_actions(self):
         while True:
@@ -56,9 +57,9 @@ class Receiver:
                 if isinstance(action, PlayPause):
                     self.play_pause()
                 elif isinstance(action, VolUp):
-                    self._controller.volume += 3
+                    self.vol_change(up=True)
                 elif isinstance(action, VolDown):
-                    self._controller.volume -= 3
+                    self.vol_change(up=False)
                 elif isinstance(action, Next):
                     self.prev_next(is_next=True)
                 elif isinstance(action, Previous):
@@ -73,9 +74,9 @@ class Receiver:
                     self.query_station()
                 elif isinstance(action, SelectGroup):
                     self.to_group(action.ix)
+                elif isinstance(action, SetMaster):
+                    self.set_master(action.ix)
                 elif isinstance(action, Exit):
-                    self._speak("Socomote is shutting down")
-                    time.sleep(3)
                     logger.debug("Exiting action thread.")
                     break
             except BaseException as e:
@@ -105,23 +106,39 @@ class Receiver:
             for s in slaves:
                 s.join(self._controller)
 
+    def vol_change(self, up: bool):
+        increment = CONFIG['Zones'][self._controller.player_name].get('VolumeIncrement')
+        if increment is None:
+            increment = CONFIG.get('VolumeIncrement', 3)
+        logger.debug(f"Volume change: Volume is currently {self._controller.volume}")
+        if up:
+            logger.debug(f"Increasing volume by {increment}")
+            self._controller.volume += increment
+        else:
+            logger.debug(f"Decreasing volume by {increment}")
+            self._controller.volume -= increment
+        logger.debug(f"Volume is now {self._controller.volume}")
+
     def _play_uri(self, uri="", meta="", title="", start=True, force_radio=False):
         self._take_control()
         self._controller.play_uri(uri=uri, meta=meta, title=title, start=start, force_radio=force_radio)
 
-    def _speak(self, text):
+    def _speak(self, text: str, pause_seconds: int = 2):
+        # todo - may want to reimplement automatic calculation
         uri = self._tts_server.get_uri(text)
         self._play_uri(uri=uri, title=text)
+        time.sleep(pause_seconds)
+
+    def _hello(self):
+        self._speak("Socomote hello")
+
+    def _goodbye(self):
+        self._speak("Socomote goodbye")
 
     def play_station(self, station: Station):
         logger.info(f"Playing station {station}")
         self._speak(station.title)
-        time.sleep(2)  # todo
-        start = time.time()
         self._play_uri(uri=station.uri, title=station.title)
-        end = time.time()
-        duration = end - start
-        logger.debug(f"Took {duration} to play URI")
 
     def play_station_by_index(self, ix: int):
         station = self._stations[ix]
@@ -171,10 +188,17 @@ class Receiver:
         if current is not None:
             self.play_station(current)
 
-    def to_group(self, i: str): # todo - weird using strings for indices even though it comes from json config
+    def to_group(self, ix: int):
         self._take_control()
         current_slaves = {s.player_name for s in self._controller.group if s != self._controller}
-        target_slaves = set(GROUP_CONFIG[self._controller.player_name][i])
+        if ix == 1:
+            # reserved for the group just containing the master zone
+            target_slaves = set()
+        elif ix == 9:
+            # reserved for all available zones
+            target_slaves = {name for name in ZONES if name != self._controller.player_name}
+        else:
+            target_slaves = set(CONFIG['Zones'][self._controller.player_name]['Groups'][ix])
         if target_slaves != current_slaves:
             logger.info(f"Grouping with target slaves {target_slaves}. (Current slaves are: {current_slaves}")
             released_slaves = current_slaves - target_slaves
@@ -185,3 +209,23 @@ class Receiver:
                 ZONES[slave].join(self._controller)
         else:
             logger.info(f"Target slaves {target_slaves} are equivalent to the existing slaves.")
+
+    def set_master(self, ix: int):
+        # Retrieve the new controller
+        controller: SoCo
+        for name, zone in CONFIG['Zones'].items():
+            if zone['Index'] == ix:
+                controller = ZONES[name]
+                break
+        else:
+            raise Exception(f"No zone with index {ix}")
+
+        if controller.player_name != self._controller.player_name:
+            logger.info(f"Setting master zone to {controller.player_name}")
+            # Edit the master zone config/file
+            MASTER_ZONE = controller.player_name
+            with SOCOMOTE_MASTER_ZONE_FILE.open('w') as f:
+                f.write(dump({"MasterZone": MASTER_ZONE}))
+            self._controller = controller
+            self._take_control()
+            self._hello()

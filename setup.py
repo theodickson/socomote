@@ -5,6 +5,7 @@ setup(
     version='0.0.2',
     packages=['socomote'],
     install_requires=[
+        "pyyaml",
         "soco >= 0.23.2",
         "getkey >= 0.6.5"
     ],

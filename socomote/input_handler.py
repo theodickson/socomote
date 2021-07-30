@@ -7,47 +7,52 @@ from socomote.action import *
 
 logger = logging.getLogger(__name__)
 
+
 class InputHandler:
+
+    terminal_chars = {
+        keys.ENTER,
+        "m",
+        "s",
+    }
 
     def __init__(self):
         self.exited = False
 
     def actions(self) -> Iterable[Action]:
+        for inp in self.inputs():
+            yield self.to_action(inp)
+
+    def inputs(self) -> Iterable[str]:
         digit_buffer = ''
         while True:
             if self.exited:
                 break
+            logger.debug("Getting key")
             char = getkey()
             logger.debug(f"Received {repr(char)}")
             input = None
             if char.isdigit():
                 digit_buffer += char
                 logger.debug(f"Added {repr(char)} to buffer. Buffer is now {repr(digit_buffer)}.")
-            elif char in (keys.ENTER, 'm'):
-                is_enter = char == keys.ENTER
-                logger.debug(f"Received {'ENTER' if is_enter else 'MODE'}. Handling buffer.")
-                if digit_buffer == '':
-                    logger.debug(f"Empty buffer, nothing to do.")
-                elif is_enter:
-                    input = digit_buffer
-                else:
-                    input = digit_buffer + "m"
+            elif char in self.terminal_chars:
+                logger.debug(f"Received terminal char {char}. Handling buffer.")
+                input = f"{digit_buffer}{char}"
                 digit_buffer = ''
             else:
                 if digit_buffer != '':
-                    logger.info("Non-enter or int received while buffer is non-empty, clearing buffer.")
+                    logger.info("Non-digit or terminal char received while buffer is non-empty, clearing buffer.")
                     digit_buffer = ''
                 input = char
             if input is not None:
                 try:
-                    logger.info(f"Handling input {repr(input)}.")
-                    yield self.handle_input(input)
+                    yield input
                 except:
                     pass
             else:
                 logger.info("No valid input. Continuing.")
 
-    def handle_input(self, inp: str) -> Action:
+    def to_action(self, inp: str) -> Action:
         if inp == keys.UP:
             return VolUp()
         elif inp == keys.DOWN:
@@ -58,16 +63,18 @@ class InputHandler:
             return Next()
         elif inp == 'p':
             return PlayPause()
-        elif inp == 's':
+        elif inp == 'r':
             return ShuffleStation()
-        elif inp == 'q':
+        elif inp == 's':
             return Query()
         elif inp[0].isdigit():
             if inp == '000m':
                 return Exit()
-            elif inp[-1].isdigit():
-                station_ix = int(inp)
-                return SelectStation(station_ix)
+            i = int(inp[:-1])
+            if inp[-1] == keys.ENTER:
+                return SelectStation(i)
             elif inp[-1] == 'm':
-                return SelectGroup(inp[:-1])
+                return SelectGroup(i)
+            elif inp[-1] == 's':
+                return SetMaster(i)
         logger.error(f"Unrecognised input {repr(input)}")
