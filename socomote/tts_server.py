@@ -11,7 +11,7 @@ import requests
 
 from socomote.config import MP3_LIB
 
-START_PORT = 9000
+START_PORT = 9001
 END_PORT = 9999
 
 logger = logging.getLogger('tts_server')

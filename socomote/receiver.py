@@ -223,7 +223,7 @@ class Receiver:
         if controller.player_name != self._controller.player_name:
             logger.info(f"Setting master zone to {controller.player_name}")
             # Edit the master zone config/file
-            MASTER_ZONE = controller.player_name
+            MASTER_ZONE = ix
             with SOCOMOTE_MASTER_ZONE_FILE.open('w') as f:
                 f.write(dump({"MasterZone": MASTER_ZONE}))
             self._controller = controller

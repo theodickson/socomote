@@ -1,0 +1,43 @@
+Zones:
+
+  # This must match the exact zone name in Sonos
+  Study:
+
+    # Index used to select this as the master zone of a Socomote instance
+    Index: 1
+
+    # List of groups this zone can control when master, by entering {GROUP_INDEX} + MODE
+    # 1 is reserved for switching back to just the master zone
+    # 9 is reserved for controlling all zones
+    Groups:
+      2:
+        - Kitchen
+      3:
+        - Kitchen
+        - Living Room
+
+    # Zone-specific volume increment
+    # Note that when controlling a group, the master zone's increment will be applied to all members in the group
+    VolumeIncrement: 3
+
+  Kitchen:
+    Index: 2
+    Groups:
+      2:
+        - Living Room
+      3:
+        - Living Room
+        - Study
+
+  Living Room:
+    Index: 3
+    Groups:
+      2:
+        - Kitchen
+      3:
+        - Kitchen
+        - Study
+
+# Global volume increment for each volume up / down command
+# Sonos uses a scale of 0 - 100
+VolumeIncrement: 3
