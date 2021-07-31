@@ -41,13 +41,13 @@ Setup
    to `~/socomote/config.yaml`
 4. Edit the config to describe your system. The example file is fully documented, so just open it up and edit away.
 
-If installing on a raspberry-pi like device that will be used solely for socomote, you may
+If installing on a raspberry pi-like device that will be used solely for socomote, you may
 want to configure it so that the application starts automatically on startup.
 
-I've done this by setting the raspberry pi to boot to the CLI, and adding `python3 -m socomote` to the
+I've done this by setting the pi to boot to the CLI, and adding `python3 -m socomote` to the
 end of my `~/.bashrc`.
 
-Additionally I have aliased `000` to `sudo shutdown now` so I can shut down the raspberry pi with
+Additionally I have added `alias 000="sudo shutdown now"` so I can shut down the pi with
 my remote.
 
 
