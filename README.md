@@ -16,21 +16,15 @@ Features:
 4. Station names are announced using [FreeTTS](https://freetts.com/), so you know what you're listening to.
 5. Extensible with custom commands and other plugins.
 
-Known issues:
-1. SoCo doesn't work with most streaming services due to auth issues, hence the limitation to radio stations.
-Other media types do work, e.g. local files, but I haven't extended it to work with them.
-2. Can only play from Sonos Favourites, and these are always ordered alphabetically.
-
-
 
 Recommended hardware
 -----------------
 
 Socomote works cross-platform, and on any input device that can mimic a keyboard. My setup is as
 follows:
- - Raspberry Pi Zero W
-   - Plus [this](https://thepihut.com/products/usb-to-microusb-otg-converter-shim) USB -> micro USB converter
+ - Raspberry Pi Zero W, in [this](https://thepihut.com/collections/raspberry-pi-zero-cases/products/adafruit-raspberry-pi-zero-case) case
  - [FLIRC USB](https://flirc.tv/more/flirc-usb)
+   - Connected with [this](https://thepihut.com/products/usb-to-microusb-otg-converter-shim) USB -> micro USB converter
  - [This](https://thepihut.com/products/mini-remote-control) cheap generic remote control
 
 FLIRC USB is just a USB IR receiver that you can pair with any remote control and easily
@@ -43,14 +37,14 @@ Setup
 1. If using FLIRC or similar, map the keys on your remote according to the command table below.
 2. Connect your device to the same network as your Sonos system.
 3. `pip3 install socomote`
-4. `python -m socomote` - The first run, if it detects no socomote config, will copy the example config
+4. `python3 -m socomote` - The first run, if it detects no socomote config, will copy the example config
    to `~/socomote/config.yaml`
 4. Edit the config to describe your system. The example file is fully documented, so just open it up and edit away.
 
 If installing on a raspberry-pi like device that will be used solely for socomote, you may
 want to configure it so that the application starts automatically on startup.
 
-I've done this by setting the raspberry pi to boot to the CLI, and adding `python -m socomote` to the
+I've done this by setting the raspberry pi to boot to the CLI, and adding `python3 -m socomote` to the
 end of my `~/.bashrc`.
 
 Additionally I have aliased `000` to `sudo shutdown now` so I can shut down the raspberry pi with
@@ -80,7 +74,8 @@ Usage
 | 000 + ENTER | Exit              |                                                                                                                                   |
 
 
-### Radio stations
+Station list explanation
+------------------------
 This list of radio stations is generated automatically by taking all radio stations saved to your Sonos favourites. This
 seemed like the easiest way to have a maintainable list of presets. The downside is that you can't order your favourites,
 they are always alphabetical. Hence the station numbers are in alphabetical order, and so will change as you edit your
