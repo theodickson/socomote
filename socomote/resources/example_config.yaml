@@ -3,10 +3,10 @@ Zones:
   # This must match the exact zone name in Sonos
   Study:
 
-    # Index used to select this as the master zone of a Socomote instance
+    # Index used to select this as the master zone of a Socomote instance, by entering {ZONE_INDEX} + z
     Index: 1
 
-    # List of groups this zone can control when master, by entering {GROUP_INDEX} + MODE
+    # List of groups this zone can control when master, by entering {GROUP_INDEX} + g
     # 1 is reserved for switching back to just the master zone
     # 9 is reserved for controlling all zones
     Groups:

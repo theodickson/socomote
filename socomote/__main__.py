@@ -4,7 +4,7 @@ from argparse import ArgumentParser
 from logging.handlers import RotatingFileHandler
 
 from socomote.config import ZONES, LOG_FILE, MASTER_ZONE, CONFIG
-from socomote.receiver import Receiver
+from socomote.core import Receiver
 
 parser = ArgumentParser()
 parser.add_argument("--zone", "-z", help="Sonos zone to control (defaults to 'zone' in config.json).")
@@ -14,7 +14,7 @@ parser.add_argument("--console-log", "-cl", action="store_true", help="Log to co
 
 def main(receiver: Receiver):
     with receiver as r:
-        r.start()
+        r.run()
     return 0
 
 if __name__ == '__main__':

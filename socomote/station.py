@@ -2,6 +2,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from threading import Thread
+from typing import Optional
 
 from soco.music_library import MusicLibrary
 
@@ -58,21 +59,29 @@ class Stations:
         # we 1-index the stations to correspond to button presses
         return self._stations[item - 1]
 
-    def get_index(self, item):
-        return self._station_index.get(item)
+    def prev_next(self, station: Station, is_next: bool) -> Optional[Station]:
+        index = self._station_index.get(station)
+        if index is not None:
+            logger.info(f"Current station index is {index}.")
+            if is_next:
+                new_index = self.next_index(index)
+            else:
+                new_index = self.prev_index(index)
+            return self[new_index]
+        logger.error(f"Current station is not a sonos favourite, cannot do next/prev station.")
 
-    def next_station(self, ix):
+    def next_index(self, ix: int) -> int:
         if 1 <= ix < len(self):
-            return self[ix + 1]
+            return ix + 1
         elif ix == len(self):
-            return self[1]
+            return 1
         else:
             raise ValueError(f"Index {ix} is invalid, no next station can be found.")
 
-    def prev_station(self, ix):
+    def prev_index(self, ix: int) -> int:
         if ix == 1:
-            return self[len(self)]
+            return len(self)
         elif 1 < ix <= len(self):
-            return self[ix - 1]
+            return ix - 1
         else:
             raise ValueError(f"Index {ix} is invalid, no previous station can be found.")
