@@ -9,7 +9,7 @@ from soco import SoCo
 from yaml import dump
 
 from socomote.action import *
-from socomote.config import ZONES, CONFIG, MASTER_ZONE, SOCOMOTE_MASTER_ZONE_FILE
+from socomote.config import ZONES, CONFIG, SOCOMOTE_MASTER_ZONE_FILE
 from socomote.input_handler import InputHandler
 from socomote.station import Station, Stations, is_station_uri
 from socomote.tts_server import TTSServer
