@@ -6,7 +6,7 @@ setup(
     license='MIT',
     author="Theo Dickson",
     author_email="tmsdickson@gmail.com",
-    version='0.1.0',
+    version='0.2.0',
     packages=['socomote'],
     include_package_data=True,
     install_requires=[
