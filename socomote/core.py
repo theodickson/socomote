@@ -43,6 +43,7 @@ class Receiver:
         self.speak("Socomote hello!")
         self._executor.run()
         self.speak("Socomote goodbye.")
+        time.sleep(2)
 
     def take_control(self):
         """
