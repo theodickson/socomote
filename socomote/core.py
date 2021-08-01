@@ -241,7 +241,7 @@ class SelectStation(CodeCommand):
     terminal = Keys.ENTER
 
     def execute(self, receiver: Receiver):
-        station = receiver.stations[self.int_code]
+        station = receiver.stations.select_station(self.int_code)
         receiver.play_station(station)
 
 

@@ -65,10 +65,14 @@ class Stations:
         # we 1-index the stations to correspond to button presses
         return self._stations[item - 1]
 
+    def select_station(self, ix: int) -> Station:
+        station = self[ix]
+        self._curr_ix = ix
+        return station
+
     def prev_next(self, is_next: bool) -> Station:
-        new_ix = self._next_index() if is_next else self._prev_index()
-        self._curr_ix = new_ix
-        return self[new_ix]
+        ix = self._next_index() if is_next else self._prev_index()
+        return self.select_station(ix)
 
     def _next_index(self) -> int:
         ix = self._curr_ix
