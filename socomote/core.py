@@ -123,7 +123,10 @@ class Receiver:
     def _play_stations(self):
         while not self.exit:
             # wait until a station has been queued
-            station = self._station_queue.get(block=True)
+            try:
+                station = self._station_queue.get(block=True, timeout=3)
+            except QueueEmpty:
+                continue
             # sleep for 2 seconds to ensure the title announcement finishes
             time.sleep(2)
             # if the queue is still empty (i.e. no further station skipping has ocurred while the announcement was playing)
