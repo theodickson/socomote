@@ -62,12 +62,12 @@ each zone should be able to control.
 | {n} + g     | Select group      | Select zone group n for the current master zone. 1 is reserved for the group just containing the master zone, 9 is reserved all zones.                                |
 | {n} + z     | Set master zone   | Set the main speaker/zone your socomote instance is controlling                                                                   |
 | 000 + ENTER | Exit              |                                                                                                                                   |
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-
-###Notes
+### Autorun on startup
 If installing on a raspberry pi-like device that will be used solely for socomote, you may
-want to configure it so that the application starts automatically on startup.
+want to configure it so that the application starts automatically in the foreground on startup.
 
 I've done this by setting the pi to boot to the CLI, and adding `python3 -m socomote` to the
 end of my `~/.bashrc`.
