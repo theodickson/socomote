@@ -56,7 +56,7 @@ PLUGINS = SOCOMOTE_HOME / "plugins.py"
 sys.path.append(str(SOCOMOTE_HOME))
 
 if not PLUGINS.exists():
-    example_plugins = Path(__file__).parent / "resources" / "example_plugins.py"
+    example_plugins = Path(__file__).parent / "resources" / "example_plugins.txt"
     shutil.copy(example_plugins, PLUGINS)
 
 # use the __import__ function to not annoy the IDE
