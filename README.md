@@ -45,8 +45,7 @@ each zone should be able to control.
 6. Start entering commands from the below table.
 
 
-###Commands
-
+### Commands
 
 | Key         | Action            | Help                                                                                                                              |
 |-------------|-------------------|-----------------------------------------------------------------------------------------------------------------------------------|
@@ -62,7 +61,6 @@ each zone should be able to control.
 | {n} + g     | Select group      | Select zone group n for the current master zone. 1 is reserved for the group just containing the master zone, 9 is reserved all zones.                                |
 | {n} + z     | Set master zone   | Set the main speaker/zone your socomote instance is controlling                                                                   |
 | 000 + ENTER | Exit              |                                                                                                                                   |
------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 ### Autorun on startup
