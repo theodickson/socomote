@@ -13,6 +13,8 @@ class Keys:
     LEFT = keys.LEFT
     RIGHT = keys.RIGHT
     PLAY_PAUSE = KEY_MAP.get("PLAY_PAUSE", "p")
+    NEXT_TRACK = KEY_MAP.get("NEXT_TRACK", "]")
+    PREV_TRACK = KEY_MAP.get("PREV_TRACK", "[")
     SHUFFLE = KEY_MAP.get("SHUFFLE", "s")
     ANNOUNCE = KEY_MAP.get("QUERY", "a")
     MUTE = KEY_MAP.get("MUTE", "m")

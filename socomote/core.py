@@ -3,7 +3,7 @@ import random
 import time
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from queue import Queue
+from queue import Queue, Empty as QueueEmpty
 from threading import Thread
 from typing import Iterable, Optional, ClassVar
 
@@ -23,16 +23,21 @@ class Receiver:
     def __init__(self, master_zone: SoCo):
         self.master_zone: SoCo = master_zone
         self.stations = Stations()
+        self.exit = False
+        self._station_queue = Queue(maxsize=1)
+        self._play_stations_thread = Thread(target=self._play_stations)
         self._tts_server = TTSServer()
         self._executor = CommandExecutor(self)
 
     def __enter__(self):
-        self._exit = False
+        self.exit = False
+        self._play_stations_thread.start()
         self._tts_server.__enter__()
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self._tts_server.__exit__(exc_type, exc_val, exc_tb)
+        self._play_stations_thread.join()
 
     def run(self):
         self.speak("Socomote hello!")
@@ -61,15 +66,12 @@ class Receiver:
             self.take_control()
         self.master_zone.play_uri(uri=uri, meta=meta, title=title, start=start, force_radio=force_radio)
 
-    def speak(self, text: str, sleep_seconds: int = 2):
+    def speak(self, text: str):
         """
         Convert the given text to speech and play it. See `tts_server` for details.
-        :param text: Text to speak
-        :param sleep_seconds: How long to sleep after sending the text (should be at least as long as the text will take)
         """
         uri = self._tts_server.get_uri(text)
         self.play_uri(uri=uri, title=text)
-        time.sleep(sleep_seconds)
 
     def current_station(self) -> Optional[Station]:
         """
@@ -81,7 +83,6 @@ class Receiver:
         else:
             logger.info(f"Currently playing media: {info['channel']}, uri {info['uri']} not a station.")
 
-
     def play_station(self, station: Station, announce_title=True):
         """
         Play the given station after speaking its title.
@@ -89,7 +90,18 @@ class Receiver:
         logger.info(f"Playing station {station}")
         if announce_title:
             self.speak(station.title)
-        self.play_uri(uri=station.uri, title=station.title)
+        self.enqueue_station(station)
+
+    def enqueue_station(self, station: Station):
+        logger.debug(f"attempted to enqueue station {station}")
+        try:
+            self._station_queue.get_nowait()
+            logger.debug("station queue was non-empty and is now cleared")
+        except QueueEmpty:
+            logger.debug("station queue empty")
+            pass
+        self._station_queue.put(station, block=False)
+        logger.debug(f"{station} enqueued")
 
     def vol_change(self, up: bool):
         increment = CONFIG['Zones'][self.master_zone.player_name].get('VolumeIncrement')
@@ -105,19 +117,20 @@ class Receiver:
         logger.debug(f"Volume is now {self.master_zone.volume}")
 
     def prev_next(self, is_next: bool):
-        station = self.current_station()
-        if station is not None:
-            logger.info(f"Current station is {station}.")
-            to_play = self.stations.prev_next(station, is_next=is_next)
-            if to_play is not None:
-                self.play_station(to_play)
-        else:
-            logger.info(f"Not currently playing a radio station, doing next/prev command.")
-            self.take_control()
-            if is_next:
-                self.master_zone.next()
-            else:
-                self.master_zone.previous()
+        to_play = self.stations.prev_next(is_next=is_next)
+        self.play_station(to_play)
+
+    def _play_stations(self):
+        while not self.exit:
+            # wait until a station has been queued
+            station = self._station_queue.get(block=True)
+            # sleep for 2 seconds to ensure the title announcement finishes
+            time.sleep(2)
+            # if the queue is still empty (i.e. no further station skipping has ocurred while the announcement was playing)
+            # play the station
+            if self._station_queue.empty():
+                self.play_uri(uri=station.uri, title=station.title)
+            # if the queue is non-empty, loop round again and try to play that station.
 
 
 class Command(ABC):
@@ -240,7 +253,7 @@ class ShuffleStation(KeyCommand):
 
 
 @dataclass
-class Next(KeyCommand):
+class NextStation(KeyCommand):
     key = Keys.RIGHT
 
     def execute(self, receiver: Receiver):
@@ -248,11 +261,29 @@ class Next(KeyCommand):
 
 
 @dataclass
-class Previous(KeyCommand):
+class PrevStation(KeyCommand):
     key = Keys.LEFT
 
     def execute(self, receiver: Receiver):
         receiver.prev_next(is_next=False)
+
+
+@dataclass
+class NextTrack(KeyCommand):
+    key = Keys.NEXT_TRACK
+
+    def execute(self, receiver: Receiver):
+        receiver.take_control()
+        receiver.master_zone.next()
+
+
+@dataclass
+class PrevTrack(KeyCommand):
+    key = Keys.PREV_TRACK
+
+    def execute(self, receiver: Receiver):
+        receiver.take_control()
+        receiver.master_zone.previous()
 
 
 @dataclass
@@ -326,8 +357,8 @@ class Exit(SpecialCodeCommand):
     code = EXIT_CODE
 
     def execute(self, receiver: Receiver):
-        # Don't have to set the flag here, see CommandExecutor.run
         logger.info("Exiting.")
+        receiver.exit = True
 
 
 class CommandExecutor:
@@ -336,6 +367,7 @@ class CommandExecutor:
         self.receiver = receiver
         self._exit = False
         self._queue: Queue[Command] = Queue()
+        self._queued_station: Optional[Station] = None
         self._execution_thread = Thread(target=self._execute_commands)
 
     def run(self):

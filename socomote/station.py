@@ -31,19 +31,23 @@ class Stations:
     def __init__(self):
         self._stations = []
         self._station_index = {}
+        self._curr_ix: int = 0
         self.refresh()
         self._refresh_thread = Thread(target=self._refresh_loop, daemon=True)
         self._refresh_thread.start()
 
     def refresh(self):
+        curr_station = self[self._curr_ix] if len(self) else None
         new_stations = []
         for fav in MusicLibrary().get_sonos_favorites():
             uri = fav.get_uri()
             if is_station_uri(uri):
                 new_stations.append(Station(fav.title, uri))
         new_index = {station: i + 1 for i, station in enumerate(new_stations)}
+        new_curr_index = new_index.get(curr_station, 0)
         self._stations = new_stations
         self._station_index = new_index
+        self._curr_ix = new_curr_index
         logger.info(f"Stations list initialised, there are {len(self)}")
 
     def _refresh_loop(self):
@@ -61,27 +65,23 @@ class Stations:
         # we 1-index the stations to correspond to button presses
         return self._stations[item - 1]
 
-    def prev_next(self, station: Station, is_next: bool) -> Optional[Station]:
-        index = self._station_index.get(station)
-        if index is not None:
-            logger.info(f"Current station index is {index}.")
-            if is_next:
-                new_index = self.next_index(index)
-            else:
-                new_index = self.prev_index(index)
-            return self[new_index]
-        logger.error(f"Current station is not a sonos favourite, cannot do next/prev station.")
+    def prev_next(self, is_next: bool) -> Station:
+        new_ix = self._next_index() if is_next else self._prev_index()
+        self._curr_ix = new_ix
+        return self[new_ix]
 
-    def next_index(self, ix: int) -> int:
-        if 1 <= ix < len(self):
+    def _next_index(self) -> int:
+        ix = self._curr_ix
+        if 0 <= ix < len(self):
             return ix + 1
         elif ix == len(self):
             return 1
         else:
             raise ValueError(f"Index {ix} is invalid, no next station can be found.")
 
-    def prev_index(self, ix: int) -> int:
-        if ix == 1:
+    def _prev_index(self) -> int:
+        ix = self._curr_ix
+        if ix <= 1:
             return len(self)
         elif 1 < ix <= len(self):
             return ix - 1
