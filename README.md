@@ -23,8 +23,7 @@ Recommended hardware
 Socomote works cross-platform, and on any input device that can mimic a keyboard. My setup is as
 follows:
  - Raspberry Pi Zero W, in [this](https://thepihut.com/collections/raspberry-pi-zero-cases/products/adafruit-raspberry-pi-zero-case) case
- - [FLIRC USB](https://flirc.tv/more/flirc-usb)
-   - Connected with [this](https://thepihut.com/products/usb-to-microusb-otg-converter-shim) USB -> micro USB converter
+ - [FLIRC USB](https://flirc.tv/more/flirc-usb), connected with [this](https://thepihut.com/products/usb-to-microusb-otg-converter-shim) USB -> micro USB converter
  - [This](https://thepihut.com/products/mini-remote-control) cheap generic remote control
 
 FLIRC USB is just a USB IR receiver that you can pair with any remote control and easily
@@ -32,30 +31,21 @@ map all of its keys to standard keystrokes using a simple GUI. As far as socomot
 it's just a keyboard.
 
 
-Setup
------
-1. If using FLIRC or similar, map the keys on your remote according to the command table below.
+Setup & Usage
+------------
+1. If using FLIRC or similar, map the keys on your remote so that it can send all the keys in the below command table.
 2. Connect your device to the same network as your Sonos system.
 3. `pip3 install socomote`
-4. `python3 -m socomote` - The first run, if it detects no socomote config, will copy the example config
-   to `~/socomote/config.yaml`
+4. `python3 -m socomote` - The first run it will just copy the example config
+   to `~/socomote/config.yaml` and exit.
 4. Edit the config to describe your system. The example file is fully documented, so just open it up and edit away.
-
-If installing on a raspberry pi-like device that will be used solely for socomote, you may
-want to configure it so that the application starts automatically on startup.
-
-I've done this by setting the pi to boot to the CLI, and adding `python3 -m socomote` to the
-end of my `~/.bashrc`.
-
-Additionally I have added `alias 000="sudo shutdown now"` so I can shut down the pi with
-my remote.
+This basically just involves numbering all your sonos zones (speakers), and then defining a list of groups of other zones that
+each zone should be able to control.
+5. `python3 -m socomote` - Now the applications should run.
+6. Start entering commands from the below table.
 
 
-Usage
------
-
-1. `python3 -m socomote`
-2.  Start entering commands!
+###Commands
 
 
 | Key         | Action            | Help                                                                                                                              |
@@ -74,10 +64,22 @@ Usage
 | 000 + ENTER | Exit              |                                                                                                                                   |
 
 
-Station list explanation
-------------------------
+
+###Notes
+If installing on a raspberry pi-like device that will be used solely for socomote, you may
+want to configure it so that the application starts automatically on startup.
+
+I've done this by setting the pi to boot to the CLI, and adding `python3 -m socomote` to the
+end of my `~/.bashrc`.
+
+Additionally I have added `alias 000="sudo shutdown now"` so I can shut down the pi with
+my remote.
+
+
+The station list
+-----------------
 This list of radio stations is generated automatically by taking all radio stations saved to your Sonos favourites. This
-seemed like the easiest way to have a maintainable list of presets. The downside is that you can't order your favourites,
+seemed like the easiest way to have a maintainable list of presets. The downside is that you can't order your Sonos favourites,
 they are always alphabetical. Hence the station numbers are in alphabetical order, and so will change as you edit your
 favourites.
 
@@ -86,7 +88,14 @@ I may revisit this and try to add a configurable presets system.
 
 Customisation
 -------------
-TODO
+
+Socomote supports plugins via the script `~/socomote/plugins.py`. This is created the first time 
+socomote runs and the example file includes a custom command to toggle the status light of the master
+speaker with `l`. 
+
+Custom commands are the main way this is intended to be used but as this script is just imported normally
+during startup, it could be used to monkeypatch socomote itself.
+
 
 
 Known issues

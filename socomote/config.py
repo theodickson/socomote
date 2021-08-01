@@ -17,6 +17,7 @@ ZONES: Dict[str, SoCo] = {}
 for zone in soco.discover():
     ZONES[zone.player_name] = zone
 
+
 SOCOMOTE_HOME = Path(
     os.environ.get('SOCOMOTE_HOME', '~/socomote')
 ).expanduser()
@@ -45,17 +46,18 @@ with SOCOMOTE_CONFIG_FILE.open('r') as f:
 with SOCOMOTE_MASTER_ZONE_FILE.open('r') as f:
     MASTER_ZONE = load(f.read())['MasterZone']
 
+
 MP3_LIB = SOCOMOTE_HOME / "mp3s"
 MP3_LIB.mkdir(exist_ok=True)
 
 EXIT_CODE = CONFIG.get('Codes', {}).get('EXIT', '000')
 
-PLUGINS = SOCOMOTE_HOME / "socomote_plugins"
+PLUGINS = SOCOMOTE_HOME / "plugins.py"
 sys.path.append(str(SOCOMOTE_HOME))
 
 if not PLUGINS.exists():
-    example_plugins = Path(__file__).parent / "resources" / "socomote_plugins"
-    shutil.copytree(example_plugins, PLUGINS)
+    example_plugins = Path(__file__).parent / "resources" / "example_plugins.py"
+    shutil.copy(example_plugins, PLUGINS)
 
-# use the __import__ function to no annoy the IDE
-__import__("socomote_plugins")
+# use the __import__ function to not annoy the IDE
+__import__("plugins")
