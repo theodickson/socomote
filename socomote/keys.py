@@ -16,7 +16,7 @@ class Keys:
     NEXT_TRACK = KEY_MAP.get("NEXT_TRACK", "]")
     PREV_TRACK = KEY_MAP.get("PREV_TRACK", "[")
     SHUFFLE = KEY_MAP.get("SHUFFLE", "s")
-    ANNOUNCE = KEY_MAP.get("QUERY", "a")
+    ANNOUNCE = KEY_MAP.get("ANNOUNCE", "a")
     MUTE = KEY_MAP.get("MUTE", "m")
     GROUP = KEY_MAP.get("GROUP", "g")
     ZONE = KEY_MAP.get("ZONE", "z")
