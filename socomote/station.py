@@ -31,22 +31,24 @@ class Stations:
     def __init__(self):
         self._stations = []
         self._station_index = {}
-        self._refresh_thread = Thread(target=self.refresh, daemon=True)
+        self.refresh()
+        self._refresh_thread = Thread(target=self._refresh_loop, daemon=True)
         self._refresh_thread.start()
 
     def refresh(self):
-        def inner():
-            new_stations = []
-            for fav in MusicLibrary().get_sonos_favorites():
-                uri = fav.get_uri()
-                if is_station_uri(uri):
-                    new_stations.append(Station(fav.title, uri))
-            new_index = {station: i + 1 for i, station in enumerate(new_stations)}
-            self._stations = new_stations
-            self._station_index = new_index
-            logger.info(f"Stations list initialised, there are {len(self)}")
+        new_stations = []
+        for fav in MusicLibrary().get_sonos_favorites():
+            uri = fav.get_uri()
+            if is_station_uri(uri):
+                new_stations.append(Station(fav.title, uri))
+        new_index = {station: i + 1 for i, station in enumerate(new_stations)}
+        self._stations = new_stations
+        self._station_index = new_index
+        logger.info(f"Stations list initialised, there are {len(self)}")
+
+    def _refresh_loop(self):
         while True:
-            inner()
+            self.refresh()
             time.sleep(60)
 
     def __iter__(self):

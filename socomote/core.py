@@ -55,9 +55,10 @@ class Receiver:
             for s in slaves:
                 s.join(self.master_zone)
 
-    def play_uri(self, uri="", meta="", title="", start=True, force_radio=False):
+    def play_uri(self, uri="", meta="", title="", start=True, force_radio=False, take_control=True):
         """Wrapper for _master_zone.play_uri which first takes control to ensure the play_uri call succeeds"""
-        self.take_control()
+        if take_control:
+            self.take_control()
         self.master_zone.play_uri(uri=uri, meta=meta, title=title, start=start, force_radio=force_radio)
 
     def speak(self, text: str, sleep_seconds: int = 2):
@@ -81,12 +82,13 @@ class Receiver:
             logger.info(f"Currently playing media: {info['channel']}, uri {info['uri']} not a station.")
 
 
-    def play_station(self, station: Station):
+    def play_station(self, station: Station, announce_title=True):
         """
         Play the given station after speaking its title.
         """
         logger.info(f"Playing station {station}")
-        self.speak(station.title)
+        if announce_title:
+            self.speak(station.title)
         self.play_uri(uri=station.uri, title=station.title)
 
     def vol_change(self, up: bool):
